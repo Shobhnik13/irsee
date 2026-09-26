@@ -1,0 +1,78 @@
+name: release
+
+# Push a tag like v1.0.0 to build all platforms and publish a GitHub Release.
+# "Run workflow" on the Actions tab builds everything without publishing.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin/universal
+            asset: irsee-macos.zip
+          - os: windows-latest
+            platform: windows/amd64
+            asset: irsee-windows.exe
+          - os: ubuntu-24.04
+            platform: linux/amd64
+            asset: irsee-linux-amd64.tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.16.0
+
+      - name: Build
+        shell: bash
+        run: |
+          tags=""
+          if [ "$RUNNER_OS" = "Linux" ]; then tags="-tags webkit2_41"; fi
+          wails build -platform ${{ matrix.platform }} -trimpath -ldflags "-s -w" $tags
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+          case "$RUNNER_OS" in
+            macOS)   ditto -c -k --keepParent build/bin/irsee.app "dist/${{ matrix.asset }}" ;;
+            Windows) cp build/bin/irsee.exe "dist/${{ matrix.asset }}" ;;
+            Linux)   tar -czf "dist/${{ matrix.asset }}" -C build/bin irsee ;;
+          esac
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

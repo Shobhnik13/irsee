@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>irsee</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="app" class="no-nicks">
+      <aside id="sidebar">
+        <div class="side-head">
+          <span class="brand">irsee</span>
+          <button id="add-server" class="icon" title="Add server">+</button>
+        </div>
+        <nav id="buffers"></nav>
+      </aside>
+
+      <main id="main">
+        <header id="bar">
+          <div class="bar-title">
+            <span id="title">irsee</span>
+            <span id="topic"></span>
+          </div>
+          <div class="bar-actions">
+            <button id="btn-list" title="Browse channels">Channels</button>
+            <button id="btn-dcc" title="File transfers (DCC)">Files</button>
+            <button id="btn-palette" title="All IRC commands (Ctrl/Cmd+K)">Commands <kbd>⌘K</kbd></button>
+          </div>
+        </header>
+        <div id="messages"></div>
+        <footer id="composer">
+          <span id="me"></span>
+          <textarea id="input" rows="1" placeholder="Message, or /command — Tab completes, Ctrl/Cmd+K for all commands" spellcheck="true"></textarea>
+        </footer>
+      </main>
+
+      <aside id="nicklist">
+        <div class="nl-head" id="nl-count"></div>
+        <ul id="nicks"></ul>
+      </aside>
+    </div>
+
+    <footer id="statusbar">
+      <span data-k="cpu" title="CPU used by irsee (100% = one full core)"></span>
+      <span data-k="ram" title="Memory used by irsee"></span>
+      <span data-k="heap"></span>
+      <span class="sep"></span>
+      <span data-k="syscpu" title="Total CPU use of this computer"></span>
+      <span data-k="sysram" title="Total memory use of this computer"></span>
+      <span data-k="net" title="IRC + file transfer traffic"></span>
+      <span class="spacer"></span>
+      <span data-k="irc"></span>
+      <span data-k="up" title="Time since irsee started"></span>
+    </footer>
+
+    <div id="overlay" hidden><div id="modal"></div></div>
+    <div id="menu" hidden></div>
+    <div id="toasts"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

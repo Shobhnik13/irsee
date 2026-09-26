@@ -1,0 +1,253 @@
+<title>irsee</title>
+<meta name="description" content="irsee is a free, tiny, native IRC client for macOS, Windows and Linux." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@112.5,400;112.5,500;112.5,800&family=Onest:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f5f6fb;
+    --surface: #ffffff;
+    --surface-2: #eceef6;
+    --ink: #14161f;
+    --muted: #5b6072;
+    --rule: #d9dce8;
+    --accent: #2b45ff;
+    --accent-ink: #ffffff;
+    --n1: #c2185b;
+    --n2: #00897b;
+    --n3: #6a3fd1;
+    --n4: #b35c00;
+    --n5: #1d6fd6;
+    --ok: #178a4c;
+    --shadow: 0 1px 0 rgba(20, 22, 31, 0.04), 0 18px 50px -20px rgba(30, 40, 110, 0.28);
+    --display: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --body: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #0c0e16;
+      --surface: #131624;
+      --surface-2: #1a1e30;
+      --ink: #e8eaf4;
+      --muted: #8d93aa;
+      --rule: #252a40;
+      --accent: #7d8cff;
+      --accent-ink: #0c0e16;
+      --n1: #ff7aa8;
+      --n2: #4fd1bd;
+      --n3: #b69cff;
+      --n4: #ffb35c;
+      --n5: #6fb3ff;
+      --ok: #52d68a;
+      --shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --bg: #0c0e16;
+    --surface: #131624;
+    --surface-2: #1a1e30;
+    --ink: #e8eaf4;
+    --muted: #8d93aa;
+    --rule: #252a40;
+    --accent: #7d8cff;
+    --accent-ink: #0c0e16;
+    --n1: #ff7aa8;
+    --n2: #4fd1bd;
+    --n3: #b69cff;
+    --n4: #ffb35c;
+    --n5: #6fb3ff;
+    --ok: #52d68a;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding-inline: 20px;
+  }
+
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+
+  /* Header */
+  header .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 22px;
+  }
+  .wordmark {
+    font: 800 20px/1 var(--display);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+  .wordmark span { color: var(--accent); }
+  nav { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--ink); }
+
+  /* Hero */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    padding-block: 48px 72px;
+  }
+  .eyebrow {
+    font: 500 12px/1 var(--display);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow b { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block; }
+  h1 {
+    font: 800 clamp(34px, 6.4vw, 72px)/1.02 var(--display);
+    letter-spacing: -0.045em;
+    margin: 20px 0 22px;
+    text-wrap: balance;
+    max-width: 14ch;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lede { font-size: 19px; color: var(--muted); max-width: 54ch; margin: 0 0 30px; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    font: 600 15px/1 var(--body);
+    padding: 14px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); border-color: var(--muted); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .price { font: 500 13px var(--display); color: var(--muted); }
+
+
+  /* Story */
+  section { padding-block: 72px; border-top: 1px solid var(--rule); }
+  .label { font: 500 12px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 28px; }
+  .story { display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px; align-items: start; }
+  .story h2 { font: 800 clamp(26px, 3.6vw, 40px)/1.12 var(--display); letter-spacing: -0.035em; margin: 0; text-wrap: balance; }
+  .story h2 span { color: var(--accent); }
+  .irclog {
+    font: 15px/1.75 var(--mono);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 20px 22px;
+    overflow-x: auto;
+  }
+  .irclog p { margin: 0; display: grid; grid-template-columns: 56px auto minmax(0, 1fr); gap: 10px; }
+  .irclog .t { color: var(--muted); opacity: 0.7; }
+  .irclog .me { color: var(--n1); font-weight: 600; }
+  .irclog .sys { color: var(--muted); grid-column: 2 / -1; }
+  .irclog .big { font-weight: 700; }
+
+  .stats-title { font: 800 clamp(26px, 3.6vw, 40px)/1.12 var(--display); letter-spacing: -0.035em; margin: 0; }
+
+  /* Numbers */
+  .numbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 36px; }
+  .numbers div { display: grid; gap: 4px; }
+  .numbers b { font: 800 clamp(26px, 3.4vw, 38px)/1 var(--display); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .numbers span { color: var(--muted); font-size: 14px; }
+
+
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 28px 40px; color: var(--muted); font-size: 14px; }
+  footer .receipt { font: 500 13px var(--display); }
+
+  @media (min-width: 960px) {
+    .story { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
+  }
+  @media (max-width: 860px) {
+    .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    nav a:not(:last-child) { display: none; }
+    .irclog p { grid-template-columns: 44px auto minmax(0, 1fr); font-size: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+  }
+</style>
+
+<header>
+  <div class="wrap">
+    <a class="wordmark" href="#top">irsee<span>_</span></a>
+    <nav>
+      <a href="#why">Why</a>
+      <a href="#stats">Stats</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <div class="eyebrow"><b></b> Free IRC client · macOS · Windows · Linux</div>
+      <h1>A free client for a <em>free</em> protocol.</h1>
+      <p class="lede">irsee is a tiny native IRC app that puts every IRC command behind a clean GUI. No subscription, no account, no trial timer. Connect, join, talk.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#why">Why it exists</a>
+        <a class="btn" href="#stats">See the stats</a>
+        <span class="price">$0.00, forever</span>
+      </div>
+    </div>
+  </div>
+
+  <section id="why">
+    <div class="wrap story">
+      <div>
+        <p class="label">Why irsee exists</p>
+        <h2>IRC has been free since 1988. <span>Using it shouldn't cost a subscription.</span></h2>
+      </div>
+      <div class="irclog" aria-label="The story, told as an IRC log">
+        <p><span class="t">[23:41]</span><span class="me">&lt;dev&gt;</span><span>IRC is an open protocol. anyone can run a server, anyone can connect.</span></p>
+        <p><span class="t">[23:41]</span><span class="me">&lt;dev&gt;</span><span>so i went looking for a nice GUI client</span></p>
+        <p><span class="t">[23:42]</span><span class="me">&lt;dev&gt;</span><span>every good-looking one wanted money. licenses, trials, subscriptions.</span></p>
+        <p><span class="t">[23:42]</span><span class="me">&lt;dev&gt;</span><span>to type text into a free chat protocol.</span></p>
+        <p><span class="t">[23:43]</span><span class="me">&lt;dev&gt;</span><span class="big">so i fucking built my own.</span></p>
+        <p><span class="t">[23:43]</span><span class="sys">* dev sets mode +free #irsee</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="stats">
+    <div class="wrap">
+      <h2 class="stats-title">App performance stats</h2>
+      <div class="numbers">
+        <div><b>~10 MB</b><span>app size</span></div>
+        <div><b>~85 MB</b><span>RAM at idle</span></div>
+        <div><b>65</b><span>commands in the palette</span></div>
+        <div><b>$0</b><span>now and later</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>irsee, made because IRC should stay free.</span>
+    <span class="receipt">price $0 · accounts 0 · trackers 0</span>
+  </div>
+</footer>
