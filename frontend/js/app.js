@@ -1541,6 +1541,11 @@ document.addEventListener('keydown', (e) => {
     S.modal?.type === 'palette' ? closeModal() : openPalette();
     return;
   }
+  if (e.key === 'F11' || (e.metaKey && e.ctrlKey && e.key.toLowerCase() === 'f')) {
+    e.preventDefault();
+    rt.WindowIsFullscreen().then((full) => (full ? rt.WindowUnfullscreen() : rt.WindowFullscreen()));
+    return;
+  }
   if (S.modal) return;
 
   if ((e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) || (e.ctrlKey && e.key === 'Tab')) {

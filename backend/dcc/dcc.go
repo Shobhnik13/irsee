@@ -60,6 +60,7 @@ const (
 var (
 	errDCCCancelled = errors.New("cancelled")
 	errMalformed    = errors.New("malformed DCC offer")
+	errNoConnect    = errors.New("peer did not connect in time")
 )
 
 // Hooks connect the manager to the rest of the app without importing it.
@@ -185,7 +186,7 @@ func (d *Manager) Send(server, nick, path string, passive bool) (string, error) 
 		}
 		d.emit(t)
 		time.AfterFunc(dccWait, func() {
-			d.finish(t, "failed", errors.New("no response from "+nick), "waiting")
+			d.finish(t, "failed", fmt.Errorf("no response from %s — their app may not support passive mode; try active mode", nick), "waiting")
 		})
 		return t.ID, nil
 	}
@@ -299,7 +300,7 @@ func (d *Manager) sendListen(t *transfer) {
 
 	conn, err := acceptOne(t.ctx, ln)
 	if err != nil {
-		d.finish(t, "failed", err, "waiting")
+		d.finish(t, "failed", blockedHere(err, t.Nick, "try passive mode"), "waiting")
 		return
 	}
 	d.sendStream(t, conn)
@@ -307,9 +308,9 @@ func (d *Manager) sendListen(t *transfer) {
 
 // sendConnect (passive send) connects to the port the peer opened.
 func (d *Manager) sendConnect(t *transfer) {
-	conn, err := (&net.Dialer{Timeout: 20 * time.Second}).DialContext(t.ctx, "tcp", net.JoinHostPort(t.ip.String(), strconv.Itoa(t.port)))
+	conn, err := dialPeer(t)
 	if err != nil {
-		d.finish(t, "failed", err)
+		d.finish(t, "failed", blockedThere(t, "try active mode"))
 		return
 	}
 	d.sendStream(t, conn)
@@ -388,8 +389,9 @@ func (d *Manager) receive(t *transfer, f *os.File) {
 	var err error
 	if t.Passive {
 		conn, err = d.receiveListen(t)
-	} else {
-		conn, err = (&net.Dialer{Timeout: 20 * time.Second}).DialContext(t.ctx, "tcp", net.JoinHostPort(t.ip.String(), strconv.Itoa(t.port)))
+		err = blockedHere(err, t.Nick, "ask them to send in active mode")
+	} else if conn, err = dialPeer(t); err != nil {
+		err = blockedThere(t, "ask them to send in passive mode")
 	}
 	if err != nil {
 		f.Close()
@@ -654,10 +656,28 @@ func acceptOne(ctx context.Context, ln net.Listener) (net.Conn, error) {
 	if err != nil && ctx.Err() == nil {
 		var ne net.Error
 		if errors.As(err, &ne) && ne.Timeout() {
-			return nil, errors.New("peer did not connect in time (firewall or NAT?)")
+			return nil, errNoConnect
 		}
 	}
 	return conn, err
+}
+
+// dialPeer connects to the address the peer gave in its DCC offer or reply.
+func dialPeer(t *transfer) (net.Conn, error) {
+	return (&net.Dialer{Timeout: 20 * time.Second}).DialContext(t.ctx, "tcp", t.Peer)
+}
+
+// blockedThere explains a failed connection to the peer's port, with the mode to try instead.
+func blockedThere(t *transfer, hint string) error {
+	return fmt.Errorf("could not connect to %s at %s — their router or firewall blocks it; %s", t.Nick, t.Peer, hint)
+}
+
+// blockedHere explains a peer that never connected to our port, with the mode to try instead.
+func blockedHere(err error, nick, hint string) error {
+	if !errors.Is(err, errNoConnect) {
+		return err
+	}
+	return fmt.Errorf("%s could not connect to you — your router or firewall blocks it; %s", nick, hint)
 }
 
 // createUnique creates name, or "name (1)", "name (2)"... without overwriting.
