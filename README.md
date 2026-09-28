@@ -29,6 +29,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organized.
 | `Ctrl/Cmd+1…9` | Jump to a window |
 | `Shift+Enter` | New line (multi-line paste sends each line) |
 | `PageUp` / `PageDown` | Scroll messages |
+| `F11`, `Ctrl+Cmd+F` (macOS) | Toggle full screen |
 
 ## Build
 
